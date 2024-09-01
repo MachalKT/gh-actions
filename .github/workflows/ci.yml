@@ -1,9 +1,6 @@
 name: Test Workflow
 on: 
-  pull_request:
-    types:
-      - opened
-  workflow_dispatch:
+  push:
 jobs:
   
   test:
@@ -11,11 +8,6 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v3
-      
-      - name: Install NodeJS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
 
       - name: Install dependencies
         run: npm ci
@@ -23,24 +15,30 @@ jobs:
       - name: Run tests
         run: npm test
   
-  deploy:
+  build:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Get code
+      - name: Get code 
         uses: actions/checkout@v3
       
-      - name: Install NodeJS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
+      - name: Install dependecies
         run: npm ci
-
-      - name: Build project
-        run: npm run build
       
+      - name: Build website
+        run: npm run build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with: 
+          name: dist-files
+          path: |
+            dist
+            package.json
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy
         run: echo "Deploying ..."
 
